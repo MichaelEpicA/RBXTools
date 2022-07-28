@@ -200,7 +200,7 @@ namespace RBXTools
 				{
 					Console.Clear();
 					Console.WriteLine("Invalid input. Please try again.");
-					Roblox.CleanupAdmin();
+					CleanupRobloxFolders();
 				}
 			}
 			Console.WriteLine("Cleaning up roblox folders...");
