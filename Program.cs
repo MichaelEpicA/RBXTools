@@ -141,7 +141,6 @@ namespace RBXTools
 			}
 		}
 
-		// Token: 0x06000008 RID: 8 RVA: 0x00002418 File Offset: 0x00000618
 		public static void SetupAutoReapply()
 		{
 			Console.WriteLine("Backing up launcher...");
