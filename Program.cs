@@ -13,13 +13,15 @@ namespace RBXTools
 		private delegate void ChoiceDelegate();
 		private static void Main(string[] args)
 		{
+			FileVersionInfo info2 = FileVersionInfo.GetVersionInfo(Process.GetCurrentProcess().MainModule.FileName);
+			//Updater.CheckForUpdates();
 			if (Roblox.DoWeHaveAdmin())
 			{
-				Console.Title = "RBXTools v1.0.0 [Administrator]";
+				Console.Title = $"RBXTools v{info2.FileVersion} [Administrator]";
 			}
 			else
 			{
-				Console.Title = "RBXTools v1.0.0";
+				Console.Title = $"RBXTools v{info2.FileVersion}";
 			}
 			if (args.Length != 0 && args[0] == "-cleanupreboot")
 			{
@@ -28,7 +30,7 @@ namespace RBXTools
 			}
 			Roblox.FindRobloxFolder();
 			info = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "repairlauncher-roblox.backup"));
-			Console.WriteLine("RBXTools v1.0.0");
+			Console.WriteLine($"RBXTools v{info2.FileVersion}");
 			Thread.Sleep(2000);
 			Console.WriteLine("Made by MichaelEpicA");
 			Thread.Sleep(1000);
@@ -221,7 +223,7 @@ namespace RBXTools
 		}
 		public static void CleanupDelegateHandler()
 		{
-			Program.CleanupRobloxFolders(false);
+			CleanupRobloxFolders(false);
 		}
 	}
 }

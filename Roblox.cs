@@ -26,115 +26,148 @@ namespace RBXTools
         {
             string robloxVersPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Roblox", "Versions");
             string robloxVers2Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Roblox", "Versions");
-            DirectoryInfo[] infos = new DirectoryInfo(robloxVersPath).GetDirectories();
-            DirectoryInfo[] infos2 = new DirectoryInfo(robloxVers2Path).GetDirectories();
-            foreach (DirectoryInfo info in infos)
+            DirectoryInfo[] infos = null;
+            if(new DirectoryInfo(robloxVersPath).Exists)
             {
-                if (info.GetFiles().Length == 0)
+                infos = new DirectoryInfo(robloxVersPath).GetDirectories();
+            }
+            try
+            {
+                foreach (DirectoryInfo info in infos)
                 {
-                    Console.WriteLine("Cleaning up directory: " + info.FullName);
-                    info.Delete();
-                    Console.WriteLine("Cleaned up directory!");
-                }
-                foreach (FileInfo info2 in info.GetFiles())
-                {
-                    if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
+                    if (info.GetFiles().Length == 0)
                     {
                         Console.WriteLine("Cleaning up directory: " + info.FullName);
-                        FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
-                        if (info3.FileDescription == "RobloxRepair Auto Update")
+                        info.Delete();
+                        Console.WriteLine("Cleaned up directory!");
+                    }
+                    foreach (FileInfo info2 in info.GetFiles())
+                    {
+                        if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
                         {
-                            //Litteraly only our modded launcher. Safe to delete.
-                            try
+                            Console.WriteLine("Cleaning up directory: " + info.FullName);
+                            FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
+                            if (info3.FileDescription == "RobloxRepair Auto Update")
                             {
-                                info.Delete(true);
-                                Console.WriteLine("Cleaned up directory!");
-                            }
-                            catch (Exception)
-                            {
-                                //Modded launcher is most likely still running.
-                                Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
-                                continue;
-                            }
+                                //Litteraly only our modded launcher. Safe to delete.
+                                try
+                                {
+                                    info.Delete(true);
+                                    Console.WriteLine("Cleaned up directory!");
+                                }
+                                catch (Exception)
+                                {
+                                    //Modded launcher is most likely still running.
+                                    Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
+                                    continue;
+                                }
 
+                            }
                         }
                     }
                 }
+            } catch(Exception)
+            {
+                //ignore
             }
+            
         }
         public static void CleanupAdmin()
         {
             string robloxVersPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Roblox", "Versions");
             string robloxVers2Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Roblox", "Versions");
-            DirectoryInfo[] infos = new DirectoryInfo(robloxVersPath).GetDirectories();
-            DirectoryInfo[] infos2 = new DirectoryInfo(robloxVers2Path).GetDirectories();
-            foreach (DirectoryInfo info in infos)
+            DirectoryInfo[] infos = null;
+            DirectoryInfo[] infos2 = null;
+            if (Directory.Exists(robloxVersPath))
             {
-                if (info.GetFiles().Length == 0)
+                infos = new DirectoryInfo(robloxVersPath).GetDirectories();
+            }
+
+            if (Directory.Exists(robloxVers2Path))
+            {
+                infos2 = new DirectoryInfo(robloxVers2Path).GetDirectories();
+            }
+            try
+            {
+                foreach (DirectoryInfo info in infos)
                 {
-                    Console.WriteLine("Cleaning up directory: " + info.FullName);
-                    info.Delete();
-                    Console.WriteLine("Cleaned up directory!");
-                }
-                foreach (FileInfo info2 in info.GetFiles())
-                {
-                    if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
+                    if (info.GetFiles().Length == 0)
                     {
                         Console.WriteLine("Cleaning up directory: " + info.FullName);
-                        FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
-                        if (info3.FileDescription == "RobloxRepair Auto Update")
+                        info.Delete();
+                        Console.WriteLine("Cleaned up directory!");
+                    }
+                    foreach (FileInfo info2 in info.GetFiles())
+                    {
+                        if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
                         {
-                            //Litteraly only our modded launcher. Safe to delete.
-                            try
+                            Console.WriteLine("Cleaning up directory: " + info.FullName);
+                            FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
+                            if (info3.FileDescription == "RobloxRepair Auto Update")
                             {
-                                info.Delete(true);
-                                Console.WriteLine("Cleaned up directory!");
-                            }
-                            catch (Exception)
-                            {
-                                //Modded launcher is most likely still running.
-                                Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
-                                continue;
-                            }
+                                //Litteraly only our modded launcher. Safe to delete.
+                                try
+                                {
+                                    info.Delete(true);
+                                    Console.WriteLine("Cleaned up directory!");
+                                }
+                                catch (Exception)
+                                {
+                                    //Modded launcher is most likely still running.
+                                    Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
+                                    continue;
+                                }
 
+                            }
                         }
                     }
                 }
+            } catch(Exception)
+            {
+                //ignore
             }
+            
             //Checking program files, (A new install location for roblox)
-            foreach (DirectoryInfo info in infos2)
+            try
             {
-                if (info.GetFiles().Length == 0)
+                foreach (DirectoryInfo info in infos2)
                 {
-                    Console.WriteLine("Cleaning up directory: " + info.FullName);
-                    info.Delete();
-                    Console.WriteLine("Cleaned up directory!");
-                }
-                foreach (FileInfo info2 in info.GetFiles())
-                {
-                    if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
+                    if (info.GetFiles().Length == 0)
                     {
                         Console.WriteLine("Cleaning up directory: " + info.FullName);
-                        FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
-                        if (info3.FileDescription == "RobloxRepair Auto Update")
+                        info.Delete();
+                        Console.WriteLine("Cleaned up directory!");
+                    }
+                    foreach (FileInfo info2 in info.GetFiles())
+                    {
+                        if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
                         {
-                            //Litteraly only our modded launcher. Safe to delete.
-                            try
+                            Console.WriteLine("Cleaning up directory: " + info.FullName);
+                            FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
+                            if (info3.FileDescription == "RobloxRepair Auto Update")
                             {
-                                info.Delete(true);
-                                Console.WriteLine("Cleaned up directory!");
-                            }
-                            catch (Exception)
-                            {
-                                //Modded launcher is most likely still running.
-                                Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
-                                continue;
-                            }
+                                //Litteraly only our modded launcher. Safe to delete.
+                                try
+                                {
+                                    info.Delete(true);
+                                    Console.WriteLine("Cleaned up directory!");
+                                }
+                                catch (Exception)
+                                {
+                                    //Modded launcher is most likely still running.
+                                    Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
+                                    continue;
+                                }
 
+                            }
                         }
                     }
                 }
+            } catch(Exception)
+            {
+                //ignore
             }
+            
         }
         public static bool DoWeHaveAdmin()
         {
@@ -144,111 +177,134 @@ namespace RBXTools
         {
             string robloxVersPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Roblox", "Versions");
             string robloxVers2Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Roblox", "Versions");
-            DirectoryInfo[] infos = new DirectoryInfo(robloxVersPath).GetDirectories();
-            DirectoryInfo[] infos2 = new DirectoryInfo(robloxVers2Path).GetDirectories();
+            DirectoryInfo[] infos = null;
+            DirectoryInfo[] infos2 = null;
+            if (Directory.Exists(robloxVersPath))
+            {
+                infos = new DirectoryInfo(robloxVersPath).GetDirectories();
+            }
+
+            if(Directory.Exists(robloxVers2Path))
+            {
+                infos2 = new DirectoryInfo(robloxVers2Path).GetDirectories();
+            }
             bool found = false;
-            foreach (DirectoryInfo info in infos)
+            try
             {
-                foreach (FileInfo info2 in info.GetFiles())
+                foreach (DirectoryInfo info in infos)
                 {
-                    if (info2.Name == "RobloxPlayerBeta.exe")
+                    foreach (FileInfo info2 in info.GetFiles())
                     {
-                        found = true;
-                        robloxFolder = info;
-                        break;
-                    }
-
-                    if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
-                    {
-                        FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
-                        if (info3.FileDescription == "RobloxRepair Auto Update")
+                        if (info2.Name == "RobloxPlayerBeta.exe")
                         {
-                            //Litteraly only our modded launcher. Safe to delete.
-                            try
-                            {
-                                info.Delete(true);
-                            }
-                            catch (Exception)
-                            {
-                                //Modded launcher is most likely still running.
-                                Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
-                                continue;
-                            }
-
+                            found = true;
+                            robloxFolder = info;
+                            break;
                         }
-                    }
-                }
 
-
-                if (found)
-                {
-                    break;
-                }
-            }
-            //Checking program files, (A new install location for roblox)
-            foreach (DirectoryInfo info in infos2)
-            {
-                if (found)
-                {
-                    break;
-                }
-                foreach (FileInfo info2 in info.GetFiles())
-                {
-                    if (info2.Name == "RobloxPlayerBeta.exe")
-                    {
-                        if (!DoWeHaveAdmin())
+                        if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
                         {
-                            string exename = Process.GetCurrentProcess().MainModule.FileName;
-                            ProcessStartInfo restartasadmin = new ProcessStartInfo
+                            FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
+                            if (info3.FileDescription == "RobloxRepair Auto Update")
                             {
-                                FileName = exename,
-                                Verb = "runas",
-                                UseShellExecute = true
-                            };
-                            Console.WriteLine("Restarting to get into administrator...");
-                            try
-                            {
-                                Process.Start(restartasadmin);
-                                Environment.Exit(0);
-                                continue;
-                            }
-                            catch (Win32Exception e)
-                            {
-                                if (e.NativeErrorCode == 1223)
+                                //Litteraly only our modded launcher. Safe to delete.
+                                try
                                 {
-                                    Console.WriteLine("We need administrator to get into your Roblox Install Location.");
-                                    Thread.Sleep(5000);
-                                    Environment.Exit(-1);
+                                    info.Delete(true);
                                 }
-                                continue;
+                                catch (Exception)
+                                {
+                                    //Modded launcher is most likely still running.
+                                    Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
+                                    continue;
+                                }
+
                             }
                         }
-                        found = true;
-                        robloxFolder = info;
-                        break;
                     }
 
-                    if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
-                    {
-                        FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
-                        if (info3.FileDescription == "RobloxRepair Auto Update")
-                        {
-                            //Litteraly only our modded launcher. Safe to delete.
-                            try
-                            {
-                                info.Delete(true);
-                            }
-                            catch (Exception)
-                            {
-                                //Modded launcher is most likely still running.
-                                Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
-                                continue;
-                            }
 
+                    if (found)
+                    {
+                        break;
+                    }
+                }
+            } catch(Exception)
+            {
+                //Well, an error occured, (Most likely trying to find the thing. Just ignore it.)
+            } 
+            
+            //Checking program files, (A new install location for roblox)
+            try
+            {
+                foreach (DirectoryInfo info in infos2)
+                {
+                    if (found)
+                    {
+                        break;
+                    }
+                    foreach (FileInfo info2 in info.GetFiles())
+                    {
+                        if (info2.Name == "RobloxPlayerBeta.exe")
+                        {
+                            if (!DoWeHaveAdmin())
+                            {
+                                string exename = Process.GetCurrentProcess().MainModule.FileName;
+                                ProcessStartInfo restartasadmin = new ProcessStartInfo
+                                {
+                                    FileName = exename,
+                                    Verb = "runas",
+                                    UseShellExecute = true
+                                };
+                                Console.WriteLine("Restarting to get into administrator...");
+                                try
+                                {
+                                    Process.Start(restartasadmin);
+                                    Environment.Exit(0);
+                                    continue;
+                                }
+                                catch (Win32Exception e)
+                                {
+                                    if (e.NativeErrorCode == 1223)
+                                    {
+                                        Console.WriteLine("We need administrator to get into your Roblox Install Location.");
+                                        Thread.Sleep(5000);
+                                        Environment.Exit(-1);
+                                    }
+                                    continue;
+                                }
+                            }
+                            found = true;
+                            robloxFolder = info;
+                            break;
+                        }
+
+                        if (info2.Name == "RobloxPlayerLauncher.exe" && info.GetFiles().Length == 1)
+                        {
+                            FileVersionInfo info3 = FileVersionInfo.GetVersionInfo(info2.FullName);
+                            if (info3.FileDescription == "RobloxRepair Auto Update")
+                            {
+                                //Litteraly only our modded launcher. Safe to delete.
+                                try
+                                {
+                                    info.Delete(true);
+                                }
+                                catch (Exception)
+                                {
+                                    //Modded launcher is most likely still running.
+                                    Console.WriteLine("Non-fatal error occured: Failed to delete custom launcher from old roblox folder: " + info.FullName + "\n You can delete this later.");
+                                    continue;
+                                }
+
+                            }
                         }
                     }
                 }
+            } catch(Exception)
+            {
+                //Well, an error occured, (Most likely trying to find the thing. Just ignore it.)
             }
+
             if (robloxFolder == null)
             {
                 throw new RobloxException("Failed to find Roblox Folder.");
