@@ -14,7 +14,7 @@ namespace RBXTools
 		private static void Main(string[] args)
 		{
 			FileVersionInfo info2 = FileVersionInfo.GetVersionInfo(Process.GetCurrentProcess().MainModule.FileName);
-			//Updater.CheckForUpdates();
+			Updater.CheckForUpdates();
 			if (Roblox.DoWeHaveAdmin())
 			{
 				Console.Title = $"RBXTools v{info2.FileVersion} [Administrator]";
@@ -25,7 +25,7 @@ namespace RBXTools
 			}
 			if (args.Length != 0 && args[0] == "-cleanupreboot")
 			{
-				Program.CleanupRobloxFolders(true);
+				CleanupRobloxFolders(true);
 				Environment.Exit(0);
 			}
 			Roblox.FindRobloxFolder();
@@ -98,16 +98,16 @@ namespace RBXTools
 			List<Choice> choices = new List<Choice>();
 			choices.Clear();
 			Console.WriteLine("Welcome! What would you like to do?");
-			Choice.Add(choices, "Restore Old Noob Sound Effect", new Program.ChoiceDelegate(Program.RestoreOldNoobSoundEffect));
-			if (new FileInfo(Program.info.FullName).Exists)
+			Choice.Add(choices, "Restore Old Noob Sound Effect", new ChoiceDelegate(RestoreOldNoobSoundEffect));
+			if (new FileInfo(info.FullName).Exists)
 			{
-				Choice.Add(choices, "Restore Original Launcher", new Program.ChoiceDelegate(Program.RestoreOriginalLauncher));
+				Choice.Add(choices, "Restore Original Launcher", new ChoiceDelegate(RestoreOriginalLauncher));
 			}
 			else
 			{
-				Choice.Add(choices, "Auto Reapply Changes After Roblox Update", new Program.ChoiceDelegate(Program.SetupAutoReapply));
+				Choice.Add(choices, "Auto Reapply Changes After Roblox Update", new ChoiceDelegate(SetupAutoReapply));
 			}
-			Choice.Add(choices, "Cleanup Roblox Folders", new Program.ChoiceDelegate(Program.CleanupDelegateHandler));
+			Choice.Add(choices, "Cleanup Roblox Folders", new ChoiceDelegate(CleanupDelegateHandler));
 			Console.WriteLine("(Input nothing if you want to exit.)");
 			Console.Write("Input a choice number: ");
 			int number = 0;
@@ -147,7 +147,7 @@ namespace RBXTools
 			Console.WriteLine("Backing up launcher...");
 			Roblox.FindRobloxFolder();
 			FileInfo launcherPath = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "RobloxPlayerLauncher.exe"));
-			launcherPath.CopyTo(Program.info.FullName, true);
+			launcherPath.CopyTo(info.FullName, true);
 			launcherPath.Delete();
 			Console.WriteLine("Back up complete!");
 			Console.WriteLine("Replacing launcher...");
@@ -175,7 +175,7 @@ namespace RBXTools
 			Console.WriteLine("Completed! (Auto reapply has been disabled.) Press enter to go back.");
 			Console.ReadLine();
 			Console.Clear();
-			Program.Welcome();
+			Welcome();
 		}
 
 		public static void CleanupRobloxFolders(bool ranwithcleanupreboot = false)
