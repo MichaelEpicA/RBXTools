@@ -11,10 +11,10 @@ namespace RBXTools
     {
 		private static FileInfo info;
 		private delegate void ChoiceDelegate();
+		private static bool updateAvailable;
 		private static void Main(string[] args)
 		{
 			FileVersionInfo info2 = FileVersionInfo.GetVersionInfo(Process.GetCurrentProcess().MainModule.FileName);
-			Updater.CheckForUpdates();
 			if (Roblox.DoWeHaveAdmin())
 			{
 				Console.Title = $"RBXTools v{info2.FileVersion} [Administrator]";
@@ -28,6 +28,14 @@ namespace RBXTools
 				CleanupRobloxFolders(true);
 				Environment.Exit(0);
 			}
+			if(args.Length != 0 && args[0] == "-updatereboot")
+            {
+				//Update of this program.
+				File.Delete("RBXTools.exe");
+				File.Move("RBXTools_new.exe", "RBXTools.exe");
+            }
+			updateAvailable = Updater.CheckForUpdates();
+			Console.Clear();
 			Roblox.FindRobloxFolder();
 			info = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "repairlauncher-roblox.backup"));
 			Console.WriteLine($"RBXTools v{info2.FileVersion}");
@@ -97,6 +105,12 @@ namespace RBXTools
 		{
 			List<Choice> choices = new List<Choice>();
 			choices.Clear();
+			if(updateAvailable)
+            {
+				Console.ForegroundColor = ConsoleColor.Green;
+				Console.WriteLine("An update is available! Press 4 to download and install the new version!");
+				Console.ResetColor();
+            }
 			Console.WriteLine("Welcome! What would you like to do?");
 			Choice.Add(choices, "Restore Old Noob Sound Effect", new ChoiceDelegate(RestoreOldNoobSoundEffect));
 			if (new FileInfo(info.FullName).Exists)
@@ -108,6 +122,10 @@ namespace RBXTools
 				Choice.Add(choices, "Auto Reapply Changes After Roblox Update", new ChoiceDelegate(SetupAutoReapply));
 			}
 			Choice.Add(choices, "Cleanup Roblox Folders", new ChoiceDelegate(CleanupDelegateHandler));
+			if(updateAvailable)
+            {
+				Choice.Add(choices, "Update to New Version", new ChoiceDelegate(Updater.UpdateAndRestart));
+            }
 			Console.WriteLine("(Input nothing if you want to exit.)");
 			Console.Write("Input a choice number: ");
 			int number = 0;
