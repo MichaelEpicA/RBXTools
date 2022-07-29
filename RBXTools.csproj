@@ -8,12 +8,10 @@
 
   <ItemGroup>
     <None Remove="Resources\ouch.ogg" />
-    <None Remove="Resources\RobloxPlayerLauncher.exe" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\ouch.ogg" />
-    <EmbeddedResource Include="Resources\RobloxPlayerLauncher.exe" />
   </ItemGroup>
 
   <ItemGroup>

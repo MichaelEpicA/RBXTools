@@ -122,6 +122,7 @@ namespace RBXTools
 				Choice.Add(choices, "Auto Reapply Changes After Roblox Update", new ChoiceDelegate(SetupAutoReapply));
 			}
 			Choice.Add(choices, "Cleanup Roblox Folders", new ChoiceDelegate(CleanupDelegateHandler));
+			//Choice.Add(choices, "Restore Original Cursors", new ChoiceDelegate(RestoreOriginalMouseCursors));
 			if(updateAvailable)
             {
 				Choice.Add(choices, "Update to New Version", new ChoiceDelegate(Updater.UpdateAndRestart));
@@ -242,5 +243,10 @@ namespace RBXTools
 		{
 			CleanupRobloxFolders(false);
 		}
+		
+		public static void RestoreOriginalMouseCursors()
+        {
+
+        }
 	}
 }
