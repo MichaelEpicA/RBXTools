@@ -18,7 +18,7 @@ namespace RBXTools
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             string tag = response.ResponseUri.OriginalString.Split('/')[7].Remove(0,1);
             bool updateAvailable = CompareVersions(currentVersion.FileVersion,tag);
-            return true;
+            return updateAvailable;
         }
 
         public static bool CompareVersions(string currentVersion, string downloadedVersion)
