@@ -11,7 +11,9 @@ namespace RBXTools
     {
 		private static FileInfo info;
 		private delegate void ChoiceDelegate();
+		private delegate bool ChoiceDecisionDelegate();
 		private static bool updateAvailable;
+		static List<Choice> choices = new List<Choice>();
 		private static void Main(string[] args)
 		{
 			FileVersionInfo info2 = FileVersionInfo.GetVersionInfo(Process.GetCurrentProcess().MainModule.FileName);
@@ -33,6 +35,9 @@ namespace RBXTools
 				//Update of this program.
 				File.Delete("RBXTools.exe");
 				File.Move("RBXTools_new.exe", "RBXTools.exe");
+				//Reboot the program.
+				Process.Start("RBXTools.exe");
+				Environment.Exit(0);
             }
 			updateAvailable = Updater.CheckForUpdates();
 			Console.Clear();
@@ -103,12 +108,11 @@ namespace RBXTools
 
 		public static void Welcome()
 		{
-			List<Choice> choices = new List<Choice>();
 			choices.Clear();
 			if(updateAvailable)
             {
 				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine("An update is available! Press 4 to download and install the new version!");
+				Console.WriteLine("An update is available! Press 5 to download and install the new version!");
 				Console.ResetColor();
             }
 			Console.WriteLine("Welcome! What would you like to do?");
@@ -122,7 +126,7 @@ namespace RBXTools
 				Choice.Add(choices, "Auto Reapply Changes After Roblox Update", new ChoiceDelegate(SetupAutoReapply));
 			}
 			Choice.Add(choices, "Cleanup Roblox Folders", new ChoiceDelegate(CleanupDelegateHandler));
-			//Choice.Add(choices, "Restore Original Cursors", new ChoiceDelegate(RestoreOriginalMouseCursors));
+			Choice.Add(choices, "Restore Old (2014) Cursors", new ChoiceDelegate(RestoreOldMouseCursors), new ChoiceDecisionDelegate(CheckIfFilesExist));
 			if(updateAvailable)
             {
 				Choice.Add(choices, "Update to New Version", new ChoiceDelegate(Updater.UpdateAndRestart));
@@ -153,9 +157,12 @@ namespace RBXTools
 					choices[number - 1].Run();
 				}
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
 				Console.Clear();
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("PLEASE REPORT THIS TO https://github.com/MichaelEpicA/RBXTools/issues! An exception occured: " + e);
+				Console.ResetColor();
 				Welcome();
 			}
 		}
@@ -172,9 +179,6 @@ namespace RBXTools
 			ExtractResource(launcherPath.Directory.FullName, launcherPath.Name);
 			Roblox.Cleanup();
 			Console.WriteLine("Replaced launcher! Press enter to go back.");
-			Console.ReadLine();
-			Console.Clear();
-			Welcome();
 		}
 		public static void RestoreOriginalLauncher()
 		{
@@ -191,9 +195,6 @@ namespace RBXTools
 			info.Delete();
 			Console.WriteLine("Replaced with original launcher.");
 			Console.WriteLine("Completed! (Auto reapply has been disabled.) Press enter to go back.");
-			Console.ReadLine();
-			Console.Clear();
-			Welcome();
 		}
 
 		public static void CleanupRobloxFolders(bool ranwithcleanupreboot = false)
@@ -235,18 +236,70 @@ namespace RBXTools
 			{
 				Environment.Exit(0);
 			}
-			Console.ReadLine();
-			Console.Clear();
-			Welcome();
 		}
 		public static void CleanupDelegateHandler()
 		{
 			CleanupRobloxFolders(false);
 		}
 		
+		public static void RestoreOldMouseCursors()
+        {
+			Console.WriteLine("Backing up original mouse cursors...");
+			DirectoryInfo mouseCursors = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", "Cursors", "KeyboardMouse"));
+			FileInfo ArrowCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowCursor.png"));
+			FileInfo ArrowFarCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowFarCursor.png"));
+			ArrowCursor.CopyTo(Path.Combine(ArrowCursor.Directory.FullName, "ArrowCursor.backup"));
+			ArrowFarCursor.CopyTo(Path.Combine(ArrowFarCursor.Directory.FullName, "ArrowFarCursor.backup"));
+			try
+            {
+				ArrowCursor.Delete();
+				ArrowFarCursor.Delete();
+			}
+			catch(Exception)
+            {
+				//Probably doesn't exist, oh well.
+            }
+			Console.WriteLine("Backed up original mouse cursors.");
+			Console.WriteLine("Replacing with old mouse cursors...");
+			File.Copy(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", ArrowCursor.Name), ArrowCursor.FullName);
+			File.Copy(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", ArrowFarCursor.Name), ArrowFarCursor.FullName);
+			Console.WriteLine("Replaced with old mouse cursors! Press enter to go back.");
+		}
+
+		public static bool CheckIfFilesExist()
+        {
+			DirectoryInfo mouseCursors = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", "Cursors", "KeyboardMouse"));
+			FileInfo ArrowCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowCursor.backup"));
+			FileInfo ArrowFarCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowFarCursor.backup"));
+			if(ArrowCursor.Exists && ArrowFarCursor.Exists)
+            {
+				Choice.Add(choices, "Restore Original Mouse Cursors", new ChoiceDelegate(RestoreOriginalMouseCursors));
+				return true;
+            } else
+            {
+				return false;
+            }
+		}
+
 		public static void RestoreOriginalMouseCursors()
         {
-
-        }
+			Console.WriteLine("Restoring original mouse cursors...");
+			DirectoryInfo mouseCursors = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", "Cursors", "KeyboardMouse"));
+			FileInfo ArrowCursorb = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowCursor.backup"));
+			FileInfo ArrowFarCursorb = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowFarCursor.backup"));
+			FileInfo ArrowCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowCursor.png"));
+			FileInfo ArrowFarCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowFarCursor.png"));
+			try
+            {
+				ArrowCursor.Delete();
+				ArrowFarCursor.Delete();
+			} catch(Exception)
+            {
+				//Probably doesn't exist, oh well.
+			}
+			ArrowCursorb.MoveTo(ArrowCursor.FullName);
+			ArrowFarCursorb.MoveTo(ArrowFarCursor.FullName);
+			Console.WriteLine("Restored original mouse cursors. Press enter to go back.");	
+		}
 	}
 }

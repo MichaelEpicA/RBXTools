@@ -25,7 +25,6 @@ namespace RBXTools
         public static void Cleanup()
         {
             string robloxVersPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Roblox", "Versions");
-            string robloxVers2Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Roblox", "Versions");
             DirectoryInfo[] infos = null;
             if(new DirectoryInfo(robloxVersPath).Exists)
             {
