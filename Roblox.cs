@@ -197,7 +197,7 @@ namespace RBXTools
                 {
                     foreach (FileInfo info2 in info.GetFiles())
                     {
-                        if (info2.Name == "RobloxPlayerBeta.exe")
+                        if (info2.Name == "temp")
                         {
                             found = true;
                             robloxFolder = info;
@@ -247,7 +247,7 @@ namespace RBXTools
                     }
                     foreach (FileInfo info2 in info.GetFiles())
                     {
-                        if (info2.Name == "RobloxPlayerBeta.exe")
+                        if (info2.Name == "temp")
                         {
                             if (!DoWeHaveAdmin())
                             {
@@ -379,6 +379,46 @@ namespace RBXTools
                 return;
             }
             robloxFolder = new DirectoryInfo(path);
+            try
+            {
+                File.Create(Path.Combine(robloxFolder.FullName, "test.test")).Close();
+                File.Delete(Path.Combine(robloxFolder.FullName, "test.test"));
+            } catch(UnauthorizedAccessException)
+            {
+                //Check if we have admin.
+                if(DoWeHaveAdmin())
+                {
+                    //Weird bug.
+                    Console.WriteLine("Error occured, and we couldn't access your roblox folder. This error is not supposed to happen, however is not a bug. If you need support, send it to the issues, under a support request. Press enter to close out.");
+                    Console.ReadLine();
+                    Environment.Exit(-1);
+                } else
+                {
+                    //Reboot into admin.
+                    string exename = Process.GetCurrentProcess().MainModule.FileName;
+                    ProcessStartInfo restartasadmin = new ProcessStartInfo
+                    {
+                        FileName = exename,
+                        Verb = "runas",
+                        UseShellExecute = true
+                    };
+                    Console.WriteLine("Restarting to get into administrator...");
+                    try
+                    {
+                        Process.Start(restartasadmin);
+                        Environment.Exit(0);
+                    }
+                    catch (Win32Exception ex)
+                    {
+                        if (ex.NativeErrorCode == 1223)
+                        {
+                            Console.WriteLine("We need administrator to get into your Roblox Install Location.");
+                            Thread.Sleep(5000);
+                            Environment.Exit(-1);
+                        }
+                    }
+                }
+            }
         }
         public static bool RemoveInvalidCharactersRef(ref string path, bool file = false, bool original = true)
         {
