@@ -46,7 +46,7 @@ namespace RBXTools
 				try
                 {
 					Config.configFilePath.Directory.Create();
-					Config.configFilePath.Create();
+					Config.configFilePath.Create().Close();
 				} catch(Exception e)
                 {
 					Console.ForegroundColor = ConsoleColor.Red;
