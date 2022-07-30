@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using System.Threading;
+using SevenZip;
 
 namespace RBXTools
 {
@@ -129,7 +131,7 @@ namespace RBXTools
 			if(updateAvailable)
             {
 				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine("An update is available! Press 5 to download and install the new version!");
+				Console.WriteLine("An update is available! Press 6 to download and install the new version!");
 				Console.ResetColor();
             }
 			Console.WriteLine("Welcome! What would you like to do?");
@@ -144,6 +146,7 @@ namespace RBXTools
 			}
 			Choice.Add(choices, "Cleanup Roblox Folders", new ChoiceDelegate(CleanupDelegateHandler));
 			Choice.Add(choices, "Restore Old (2014) Cursors", new ChoiceDelegate(RestoreOldMouseCursors), new ChoiceDecisionDelegate(CheckIfFilesExist));
+			Choice.Add(choices, "Backup Roblox Folder", new ChoiceDelegate(BackupRobloxFolder));
 			if(updateAvailable)
             {
 				Choice.Add(choices, "Update to New Version", new ChoiceDelegate(Updater.UpdateAndRestart));
@@ -326,5 +329,45 @@ namespace RBXTools
 			Config.RemoveMod("MouseCursorMod");
 			Console.WriteLine("Restored original mouse cursors. Press enter to go back.");	
 		}
-	}
+
+		public static void BackupRobloxFolder()
+        {
+			Console.WriteLine("Please enter a path to save the back up to.");
+			string path = Console.ReadLine();
+			Roblox.RemoveInvalidCharactersRef(ref path, true, false);
+			if(String.IsNullOrWhiteSpace(path))
+            {
+				Console.WriteLine("Path cannot be empty.");
+				Console.Clear();
+				BackupRobloxFolder();
+				return;
+            }
+			FileInfo info = new FileInfo(path);
+			if (info.Exists)
+            {
+				Console.WriteLine("We can't save to this path because a file already exists there. Choose a different path.");
+				BackupRobloxFolder();
+				return;
+            }
+			Console.WriteLine("Backing up...");
+			info.Create().Close();
+			if(File.Exists("7z.dll"))
+            {
+				
+            }
+			var path2 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Environment.Is64BitProcess ? "x64" : "x86", "7z.dll");
+			SevenZipBase.SetLibraryPath(path2);
+			SevenZipCompressor compressor = new SevenZipCompressor();
+			compressor.Compressing += Compressing;
+			compressor.CompressDirectoryAsync(Roblox.robloxFolder.FullName, info.FullName).Wait();
+			Console.WriteLine("\nCompleted backup to: " + info.FullName);
+			Console.WriteLine("Press enter to go back.");
+		}
+		static bool update = false;
+        private static void Compressing(object sender, ProgressEventArgs e)
+        {
+			ConsoleUtility.WriteProgressBar(e.PercentDone,update);
+			update = true;
+        }
+    }
 }

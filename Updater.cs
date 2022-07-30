@@ -12,13 +12,14 @@ namespace RBXTools
 {
     class Updater
     {
+        static Stopwatch sw = new Stopwatch();
         public static bool CheckForUpdates()
         {
             FileVersionInfo currentVersion = FileVersionInfo.GetVersionInfo(Process.GetCurrentProcess().MainModule.FileName);
             Console.WriteLine("Checking for updates...");
             string tag = GetLatestVersion().Remove(0, 1);
             bool updateAvailable = CompareVersions(currentVersion.FileVersion,tag);
-            return updateAvailable;
+            return true;
         }
 
         public static bool CompareVersions(string currentVersion, string downloadedVersion)
@@ -53,7 +54,9 @@ namespace RBXTools
                 Uri downloadUri = new Uri(downloadbaseUri + tag + "/RBXTools.exe");
                 WebClient client = new WebClient();
                 Console.WriteLine("Downloading update...");
-                client.DownloadFile(downloadUri, "RBXTools_new.exe");
+                client.DownloadProgressChanged += Client_DownloadProgressChanged;
+                sw.Start();
+                client.DownloadFileTaskAsync(downloadUri, "RBXTools_new.exe").Wait();
                 Console.WriteLine("Update downloaded.");
                 Console.WriteLine("Restarting and deleting this old version...");
                 ProcessStartInfo info = new ProcessStartInfo
@@ -79,6 +82,21 @@ namespace RBXTools
                 UpdateAndRestart();
             }
            
+        }
+        static bool update = false;
+        private static void Client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            int progress = e.ProgressPercentage;
+            string stuff = string.Format("{0} MB/s", (e.BytesReceived / 1024 / 1024d / sw.Elapsed.TotalSeconds).ToString("0.00"));
+                stuff += string.Format(" {0} MB's / {1} MB's",
+                (e.BytesReceived / 1024d / 1024d).ToString("0.00"), 
+                (e.TotalBytesToReceive / 1024d / 1024d).ToString("0.00"));
+            if(ConsoleUtility.stillworking)
+            {
+                return;
+            }
+            ConsoleUtility.WriteProgressBar(progress, update,stuff);
+            update = true;
         }
 
         private static string GetLatestVersion()

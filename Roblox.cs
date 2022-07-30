@@ -197,7 +197,7 @@ namespace RBXTools
                 {
                     foreach (FileInfo info2 in info.GetFiles())
                     {
-                        if (info2.Name == "temp")
+                        if (info2.Name == "RobloxPlayerBeta.exe")
                         {
                             found = true;
                             robloxFolder = info;
@@ -247,7 +247,7 @@ namespace RBXTools
                     }
                     foreach (FileInfo info2 in info.GetFiles())
                     {
-                        if (info2.Name == "temp")
+                        if (info2.Name == "RobloxPlayerBeta.exe")
                         {
                             if (!DoWeHaveAdmin())
                             {
