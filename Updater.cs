@@ -19,7 +19,7 @@ namespace RBXTools
             Console.WriteLine("Checking for updates...");
             string tag = GetLatestVersion().Remove(0, 1);
             bool updateAvailable = CompareVersions(currentVersion.FileVersion,tag);
-            return true;
+            return updateAvailable;
         }
 
         public static bool CompareVersions(string currentVersion, string downloadedVersion)
