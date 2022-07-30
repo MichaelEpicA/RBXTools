@@ -173,6 +173,12 @@ namespace RBXTools
 				{
 					choices[number - 1].Run();
 				}
+			} catch(ArgumentOutOfRangeException e)
+            {
+				//Put in a number higher than our actual choice count.
+				Console.Clear();
+				Console.WriteLine("That was an incorrect entry, try again!");
+				Welcome();
 			}
 			catch (Exception e)
 			{
