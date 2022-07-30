@@ -40,6 +40,22 @@ namespace RBXTools
 				Environment.Exit(0);
             }
 			updateAvailable = Updater.CheckForUpdates();
+			if(!Config.configFilePath.Exists)
+            {
+				//Directory needs to be created, otherwise we will have a System.IO.DirectoryNotFound issue.
+				try
+                {
+					Config.configFilePath.Directory.Create();
+					Config.configFilePath.Create();
+				} catch(Exception e)
+                {
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine("An exception occured: " + e + "If this keeps happening, please leave an issue on https://github.com/MichaelEpicA/RBXTools/issues, so that we can help you. Press enter to continue.");
+					Console.ReadLine();
+					Console.ResetColor();
+                }
+				
+            }
 			Console.Clear();
 			Roblox.FindRobloxFolder();
 			info = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "repairlauncher-roblox.backup"));
@@ -55,7 +71,7 @@ namespace RBXTools
 		{
 			Console.WriteLine("Do you want to specify what death effect you would like to use? (Y/N)");
 			string text = Console.ReadLine();
-			string custompath = "";
+			string custompath = "default";
 			if (text.ToLower().Contains("y"))
 			{
 				Console.WriteLine("Please input OGG file path to your custom Death Effect.");
@@ -81,7 +97,7 @@ namespace RBXTools
 			FileInfo info = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "sounds", "ouch.ogg"));
 			info.Delete();
 			Console.WriteLine("Replacing Death Sound Effect...");
-			if (custompath != "")
+			if (custompath != "default")
 			{
 				File.Copy(custompath, info.FullName);
 			}
@@ -89,6 +105,7 @@ namespace RBXTools
 			{
 				ExtractResource(Path.Combine(Roblox.robloxFolder.FullName, "content", "sounds"), "ouch.ogg");
 			}
+			Config.WriteMod("DeathSFXMod", custompath);
 			Console.WriteLine("Completed! Test it out in Roblox. Press enter to go back.");
 			Console.ReadLine();
 			Console.Clear();
@@ -263,6 +280,7 @@ namespace RBXTools
 			Console.WriteLine("Replacing with old mouse cursors...");
 			File.Copy(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", ArrowCursor.Name), ArrowCursor.FullName);
 			File.Copy(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", ArrowFarCursor.Name), ArrowFarCursor.FullName);
+			Config.WriteMod("MouseCursorMod");
 			Console.WriteLine("Replaced with old mouse cursors! Press enter to go back.");
 		}
 
@@ -299,6 +317,7 @@ namespace RBXTools
 			}
 			ArrowCursorb.MoveTo(ArrowCursor.FullName);
 			ArrowFarCursorb.MoveTo(ArrowFarCursor.FullName);
+			Config.RemoveMod("MouseCursorMod");
 			Console.WriteLine("Restored original mouse cursors. Press enter to go back.");	
 		}
 	}
