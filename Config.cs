@@ -26,7 +26,7 @@ namespace RBXTools
             string configcurrent = File.ReadAllText(configFilePath.FullName);
             configcurrent += id + " " + custompath + "\n";
             File.WriteAllText(configFilePath.FullName, configcurrent);
-            Console.WriteLine("Wrote mod: " + id + "to config file!");
+            Console.WriteLine("Wrote mod: " + id + " to config file!");
         }
 
         public static void WriteMod(string id, string[] custompaths)
@@ -36,7 +36,11 @@ namespace RBXTools
                 Console.WriteLine("This is not a valid ID! Writing cannot continue.");
                 return;
             }
-            CheckIfModHasBeenAddedAlready(id);
+            if (CheckIfModHasBeenAddedAlready(id))
+            {
+                RemoveMod(id);
+                Console.Clear();
+            }
             Console.WriteLine("Writing mod to config file...");
             string configcurrent = File.ReadAllText(configFilePath.FullName);
             configcurrent += id + " ";
