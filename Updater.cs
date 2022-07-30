@@ -40,6 +40,7 @@ namespace RBXTools
         public static void UpdateAndRestart()
         {
             string description = GetDescriptionOfRelease();
+            bool launcherupdate = description.ToLower().Contains("launcher");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Update Changelog/Important info: " + description);
             Console.ResetColor();
@@ -58,6 +59,14 @@ namespace RBXTools
                 sw.Start();
                 client.DownloadFileTaskAsync(downloadUri, "RBXTools_new.exe").Wait();
                 Console.WriteLine("Update downloaded.");
+                if(launcherupdate && Program.info.Exists)
+                {
+                    Console.WriteLine("Launcher update detected, uninjecting...");
+                    Program.RestoreOriginalLauncher();
+                    Config.WriteMod("ReinstallLauncherMod");
+                    Console.WriteLine("Completed.");
+                }
+                
                 Console.WriteLine("Restarting and deleting this old version...");
                 ProcessStartInfo info = new ProcessStartInfo
                 {

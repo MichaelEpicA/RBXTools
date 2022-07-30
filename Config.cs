@@ -8,7 +8,7 @@ namespace RBXTools
     class Config
     {
         public static FileInfo configFilePath = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RBXTools", "mods.config"));
-        public static string[] strings = new string[] { "DeathSFXMod", "MouseCursorMod" };
+        public static string[] strings = new string[] { "DeathSFXMod", "MouseCursorMod", "ReinstallLauncherMod" };
         public static List<string> validIDs = new List<string>(strings);
         public static void WriteMod(string id, string custompath = "default")
         {

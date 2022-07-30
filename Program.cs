@@ -11,7 +11,7 @@ namespace RBXTools
 {
     class Program
     {
-		private static FileInfo info;
+		public static FileInfo info;
 		private delegate void ChoiceDelegate();
 		private delegate bool ChoiceDecisionDelegate();
 		private static bool updateAvailable;
@@ -36,6 +36,16 @@ namespace RBXTools
             {
 				//Update of this program.
 				File.Delete("RBXTools.exe");
+				if(Config.CheckIfModHasBeenAddedAlready("ReinstallLauncherMod"))
+                {
+					//Launcher update, reinject.
+					Console.WriteLine("Reinjecting launcher...");
+					Roblox.FindRobloxFolder();
+					info = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "repairlauncher-roblox.backup"));
+					SetupAutoReapply();
+					Config.RemoveMod("ReinstallLauncherMod");
+					Console.WriteLine("Completed reinject of launcher.");
+				}
 				File.Move("RBXTools_new.exe", "RBXTools.exe");
 				//Reboot the program.
 				Process.Start("RBXTools.exe");
