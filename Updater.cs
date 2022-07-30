@@ -83,12 +83,20 @@ namespace RBXTools
 
         private static string GetLatestVersion()
         {
-            Uri githubUri = new Uri("https://github.com/MichaelEpicA/RBXTools");
-            Uri latestReleaseUri = new Uri(githubUri + "/releases/latest");
-            HttpWebRequest request = WebRequest.CreateHttp(latestReleaseUri);
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            string tag = response.ResponseUri.OriginalString.Split('/')[7];
-            return tag;
+            try
+            {
+                Uri githubUri = new Uri("https://github.com/MichaelEpicA/RBXTools");
+                Uri latestReleaseUri = new Uri(githubUri + "/releases/latest");
+                HttpWebRequest request = WebRequest.CreateHttp(latestReleaseUri);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                string tag = response.ResponseUri.OriginalString.Split('/')[7];
+                return tag;
+            } catch(Exception)
+            {
+                Console.WriteLine("An error occured while trying to get the latest version. Most likely, you are offline. Offline mode engaged, no online updates are supported here.");
+                return "v0.0.0";
+            }
+            
         }
 
         private static string GetDescriptionOfRelease()
