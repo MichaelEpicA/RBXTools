@@ -39,6 +39,7 @@ namespace RBXTools
                         Console.WriteLine("Cleaning up directory: " + info.FullName);
                         info.Delete();
                         Console.WriteLine("Cleaned up directory!");
+                        continue;
                     }
                     foreach (FileInfo info2 in info.GetFiles())
                     {
@@ -95,6 +96,7 @@ namespace RBXTools
                         Console.WriteLine("Cleaning up directory: " + info.FullName);
                         info.Delete();
                         Console.WriteLine("Cleaned up directory!");
+                        continue;
                     }
                     foreach (FileInfo info2 in info.GetFiles())
                     {
@@ -136,6 +138,7 @@ namespace RBXTools
                         Console.WriteLine("Cleaning up directory: " + info.FullName);
                         info.Delete();
                         Console.WriteLine("Cleaned up directory!");
+                        continue;
                     }
                     foreach (FileInfo info2 in info.GetFiles())
                     {
