@@ -346,6 +346,13 @@ namespace RBXTools
             //Check if we have invalid characters in our path.
             RemoveInvalidCharactersRef(ref path);
             bool isRobloxFolder = false;
+            if(String.IsNullOrWhiteSpace(path))
+            {
+                Console.Clear();
+                Console.WriteLine("This is not a valid roblox folder (Directory did not exist), enter that again.");
+                InputRobloxFolder();
+                return;
+            }
             //Verify that this is the roblox folder.
             if (!new DirectoryInfo(path).Exists)
             {
