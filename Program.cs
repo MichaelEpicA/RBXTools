@@ -141,7 +141,7 @@ namespace RBXTools
 			if(updateAvailable)
             {
 				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine("An update is available! Press 6 to download and install the new version!");
+				Console.WriteLine("An update is available! Press 7 to download and install the new version!");
 				Console.ResetColor();
             }
 			Console.WriteLine("Welcome! What would you like to do?");
@@ -157,6 +157,7 @@ namespace RBXTools
 			Choice.Add(choices, "Cleanup Roblox Folders", new ChoiceDelegate(CleanupDelegateHandler));
 			Choice.Add(choices, "Restore Old (2014) Cursors", new ChoiceDelegate(RestoreOldMouseCursors), new ChoiceDecisionDelegate(CheckIfFilesExist));
 			Choice.Add(choices, "Backup Roblox Folder", new ChoiceDelegate(BackupRobloxFolder));
+			Choice.Add(choices, "Replace Moon And Sun Textures", new ChoiceDelegate(ReplaceMoonAndSun), new ChoiceDecisionDelegate(CheckConfigFileForMod));
 			if(updateAvailable)
             {
 				Choice.Add(choices, "Update to New Version", new ChoiceDelegate(Updater.UpdateAndRestart));
@@ -186,7 +187,7 @@ namespace RBXTools
 				{
 					choices[number - 1].Run();
 				}
-			} catch(ArgumentOutOfRangeException e)
+			} catch(ArgumentOutOfRangeException)
             {
 				//Put in a number higher than our actual choice count.
 				Console.Clear();
@@ -203,7 +204,73 @@ namespace RBXTools
 			}
 		}
 
-		public static void SetupAutoReapply()
+        private static bool CheckConfigFileForMod()
+        {
+           if(Config.CheckIfModHasBeenAddedAlready("ReplaceMoonAndSunMod"))
+            {
+				Choice.Add(choices, "Restore Moon And Sun to Originals", new ChoiceDelegate(RestoreMoonAndSun));
+				return true;
+            } else
+            {
+				return false;
+            }
+        }
+
+        private static void RestoreMoonAndSun()
+        {
+			Console.WriteLine("Restoring moon and sun...");
+			DirectoryInfo MoonAndSunDirectory = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "sky"));
+			FileInfo moon = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "moon.jpg"));
+			FileInfo sun = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "sun.jpg"));
+			FileInfo moonb = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "moonb.jpg"));
+			FileInfo sunb = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "sunb.jpg"));
+			Console.WriteLine("Deleting modded moon and sun...");
+			moon.Delete();
+			sun.Delete();
+			Console.WriteLine("Restoring backup of moon and sun...");
+			moonb.CopyTo(moon.FullName);
+			sunb.CopyTo(sun.FullName);
+			Config.RemoveMod("ReplaceMoonAndSunMod");
+			Console.WriteLine("Restored backup of moon and sun! Press enter to go back.");
+
+		}
+
+		private static void ReplaceMoonAndSun()
+		{
+			Console.WriteLine("Replacing moon and sun...");
+			DirectoryInfo MoonAndSunDirectory = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "sky"));
+			FileInfo moon = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "moon.jpg"));
+			FileInfo sun = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "sun.jpg"));
+			FileInfo moonb = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "moonb.jpg"));
+			FileInfo sunb = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "sunb.jpg"));
+			Console.WriteLine("Please enter path you want to use to replace the moon.");
+			string moonpath = Console.ReadLine();
+			Console.WriteLine("Please enter path you want to use to replace the sun.");
+			string sunpath = Console.ReadLine();
+			if (!Roblox.RemoveInvalidCharactersRef(ref moonpath, true, false))
+            {
+				//Reenter the path.
+				ReplaceMoonAndSun();
+            }
+			if(!Roblox.RemoveInvalidCharactersRef(ref sunpath, true, false))
+            {
+				//Reenter the path.
+				ReplaceMoonAndSun();
+            }
+			Console.WriteLine("Backing up moon and sun...");
+			moon.CopyTo(moonb.FullName);
+			sun.CopyTo(sunb.FullName);
+			Console.WriteLine("Backed up moon and sun.");
+			Console.WriteLine("Replacing moon and sun...");
+			moon.Delete();
+			File.Copy(moonpath, moon.FullName);
+			sun.Delete();
+			File.Copy(sunpath, sun.FullName);
+			Config.WriteMod("ReplaceMoonAndSunMod", moonpath, sunpath);
+			Console.WriteLine("Replaced Moon and Sun, press enter to go back.");
+		}
+
+        public static void SetupAutoReapply()
 		{
 			Console.WriteLine("Backing up launcher...");
 			Roblox.FindRobloxFolder();

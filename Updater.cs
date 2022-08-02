@@ -70,7 +70,7 @@ namespace RBXTools
                 Console.WriteLine("Restarting and deleting this old version...");
                 ProcessStartInfo info = new ProcessStartInfo
                 {
-                    FileName = "RBXTools_new.exe",
+                    FileName = "RBXTools_new.exe",  
                     Arguments = "-updatereboot",
                     UseShellExecute = true,
                     CreateNoWindow = false

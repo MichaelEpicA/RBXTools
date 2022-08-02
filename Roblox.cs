@@ -346,7 +346,7 @@ namespace RBXTools
             //Check if we have invalid characters in our path.
             RemoveInvalidCharactersRef(ref path);
             bool isRobloxFolder = false;
-            if(String.IsNullOrWhiteSpace(path))
+            if (String.IsNullOrWhiteSpace(path))
             {
                 Console.Clear();
                 Console.WriteLine("This is not a valid roblox folder (Directory did not exist), enter that again.");
@@ -383,16 +383,18 @@ namespace RBXTools
             {
                 File.Create(Path.Combine(robloxFolder.FullName, "test.test")).Close();
                 File.Delete(Path.Combine(robloxFolder.FullName, "test.test"));
-            } catch(UnauthorizedAccessException)
+            }
+            catch (UnauthorizedAccessException)
             {
                 //Check if we have admin.
-                if(DoWeHaveAdmin())
+                if (DoWeHaveAdmin())
                 {
                     //Weird bug.
                     Console.WriteLine("Error occured, and we couldn't access your roblox folder. This error is not supposed to happen, however is not a bug. If you need support, send it to the issues, under a support request. Press enter to close out.");
                     Console.ReadLine();
                     Environment.Exit(-1);
-                } else
+                }
+                else
                 {
                     //Reboot into admin.
                     string exename = Process.GetCurrentProcess().MainModule.FileName;
