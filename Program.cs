@@ -245,19 +245,39 @@ namespace RBXTools
 			FileInfo sunb = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "sunb.jpg"));
 			Console.WriteLine("Please enter path you want to use to replace the moon.");
 			string moonpath = Console.ReadLine();
+			if (!Roblox.RemoveInvalidCharactersRef(ref moonpath, true, false))
+			{
+				//Reenter the path.
+				if(Path.GetExtension(moonpath) != ".jpg")
+                {
+					Console.WriteLine("In order to replace the texture correctly, we need to have it be a jpg. Try again.");
+					ReplaceMoonAndSun();
+                }
+				Console.WriteLine("Incorrect path. Please reenter it.");
+				ReplaceMoonAndSun();
+			}
 			Console.WriteLine("Please enter path you want to use to replace the sun.");
 			string sunpath = Console.ReadLine();
-			if (!Roblox.RemoveInvalidCharactersRef(ref moonpath, true, false))
-            {
-				//Reenter the path.
-				ReplaceMoonAndSun();
-            }
 			if(!Roblox.RemoveInvalidCharactersRef(ref sunpath, true, false))
             {
 				//Reenter the path.
+				if (Path.GetExtension(sunpath) != ".jpg")
+				{
+					Console.WriteLine("In order to replace the texture correctly, we need to have it be a jpg. Try again.");
+					ReplaceMoonAndSun();
+				}
+				Console.WriteLine("Incorrect path. Please reenter it.");
 				ReplaceMoonAndSun();
             }
 			Console.WriteLine("Backing up moon and sun...");
+			if(moonb.Exists)
+            {
+				moonb.Delete();
+            }
+			if(sunb.Exists)
+            {
+				sunb.Delete();
+            }
 			moon.CopyTo(moonb.FullName);
 			sun.CopyTo(sunb.FullName);
 			Console.WriteLine("Backed up moon and sun.");
