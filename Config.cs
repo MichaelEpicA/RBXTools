@@ -82,13 +82,13 @@ namespace RBXTools
 
         public static bool CheckIfModHasBeenAddedAlready(string id)
         {
-            Console.WriteLine("Searching for mod...");
+            //Console.WriteLine("Searching for mod...");
             string[] lines = File.ReadAllLines(configFilePath.FullName);
             foreach(string line in lines)
             {
                 if(line.Contains(id))
                 {
-                    Console.WriteLine("Mod already exists!");
+                    //Console.WriteLine("Mod already exists!");
                     return true;
                 }
             }
