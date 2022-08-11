@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -15,16 +17,16 @@ namespace RBXTools
         static Stopwatch sw = new Stopwatch();
         public static bool CheckForUpdates()
         {
-            FileVersionInfo currentVersion = FileVersionInfo.GetVersionInfo(Process.GetCurrentProcess().MainModule.FileName);
+            Version currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             Console.WriteLine("Checking for updates...");
             string tag = GetLatestVersion().Remove(0, 1);
-            bool updateAvailable = CompareVersions(currentVersion.FileVersion,tag);
+            bool updateAvailable = CompareVersions(currentVersion.ToString(),tag);
             return updateAvailable;
         }
 
         public static bool CompareVersions(string currentVersion, string downloadedVersion)
         {
-            string[] splitCurrentVersion = currentVersion.Split('.');
+            string[] splitCurrentVersion = currentVersion.Split('.').Where((source, index) => index != 3).ToArray();
             string[] splitDownloadedVersion = downloadedVersion.Split('.');
             for (int i = 0; i < splitCurrentVersion.Length; i++)
             {

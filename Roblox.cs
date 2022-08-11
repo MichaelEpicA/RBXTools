@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading;
 
@@ -179,16 +180,32 @@ namespace RBXTools
         {
             string robloxVersPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Roblox", "Versions");
             string robloxVers2Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Roblox", "Versions");
+            string home = Environment.GetEnvironmentVariable("HOME");
+            string user = Environment.GetEnvironmentVariable("USER");
+            string robloxVersLinuxPath = home + "/.local/share/grapejuice/prefixes/player/drive_c/users/" + user + "/AppData/Local/Roblox/Versions/";
+            string robloxVers2LinuxPath = home + "/.local/share/grapejuice/prefixes/player/drive_c/Program Files (x86)/Roblox/Versions/";
             DirectoryInfo[] infos = null;
             DirectoryInfo[] infos2 = null;
             if (Directory.Exists(robloxVersPath))
             {
                 infos = new DirectoryInfo(robloxVersPath).GetDirectories();
+            } else
+            {
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Directory.Exists(robloxVersLinuxPath))
+                {
+                    infos = new DirectoryInfo(robloxVersLinuxPath).GetDirectories();
+                }
             }
 
             if(Directory.Exists(robloxVers2Path))
             {
                 infos2 = new DirectoryInfo(robloxVers2Path).GetDirectories();
+            } else
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Directory.Exists(robloxVers2LinuxPath))
+                {
+                    infos = new DirectoryInfo(robloxVers2LinuxPath).GetDirectories();
+                }
             }
             bool found = false;
             try
@@ -249,7 +266,7 @@ namespace RBXTools
                     {
                         if (info2.Name == "RobloxPlayerBeta.exe")
                         {
-                            if (!DoWeHaveAdmin())
+                            if ((!RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || !RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && !DoWeHaveAdmin())
                             {
                                 string exename = Process.GetCurrentProcess().MainModule.FileName;
                                 ProcessStartInfo restartasadmin = new ProcessStartInfo

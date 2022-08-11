@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using SevenZip;
 
@@ -19,7 +21,15 @@ namespace RBXTools
 		private static void Main(string[] args)
 		{
 			FileVersionInfo info2 = FileVersionInfo.GetVersionInfo(Process.GetCurrentProcess().MainModule.FileName);
-			if (Roblox.DoWeHaveAdmin())
+			
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+				Console.Title = $"RBXTools v{string.Join(",", Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.').Where((source, index) => index != 3).ToArray())} [Linux]";
+            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+				Console.Title = $"RBXTools v{string.Join(",", Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.').Where((source, index) => index != 3).ToArray())} [MacOS]";
+			}
+			else if (Roblox.DoWeHaveAdmin())
 			{
 				Console.Title = $"RBXTools v{info2.FileVersion} [Administrator]";
 			}
@@ -229,7 +239,9 @@ namespace RBXTools
 			sun.Delete();
 			Console.WriteLine("Restoring backup of moon and sun...");
 			moonb.CopyTo(moon.FullName);
+			moonb.Delete();
 			sunb.CopyTo(sun.FullName);
+			sunb.Delete();
 			Config.RemoveMod("ReplaceMoonAndSunMod");
 			Console.WriteLine("Restored backup of moon and sun! Press enter to go back.");
 
@@ -447,15 +459,30 @@ namespace RBXTools
 				return;
             }
 			Console.WriteLine("Backing up...");
-			info.Create().Close();
-			if(File.Exists("7z.dll"))
+			string ext = Path.GetExtension(info.FullName);
+			if(ext != ".zip")
             {
-				
-            }
+				info.Create().Close();
+			}
 			var path2 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Environment.Is64BitProcess ? "x64" : "x86", "7z.dll");
 			SevenZipBase.SetLibraryPath(path2);
 			SevenZipCompressor compressor = new SevenZipCompressor();
+			//Decide which type we want to compress to.
+			switch(ext)
+            {
+				case ".zip":
+					ZipFile.CreateFromDirectory(Roblox.robloxFolder.FullName, info.FullName);
+					Console.WriteLine("\nCompleted backup to: " + info.FullName);
+					Console.WriteLine("Press enter to go back.");
+					return;
+					break;
+
+				 default:
+					compressor.ArchiveFormat = OutArchiveFormat.SevenZip;
+					break;
+            }
 			compressor.Compressing += Compressing;
+			if (ext == ".zip") return;
 			compressor.CompressDirectoryAsync(Roblox.robloxFolder.FullName, info.FullName).Wait();
 			Console.WriteLine("\nCompleted backup to: " + info.FullName);
 			Console.WriteLine("Press enter to go back.");
