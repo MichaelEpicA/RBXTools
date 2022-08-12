@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -54,7 +55,17 @@ namespace RBXTools
                 Uri githubUri = new Uri("https://github.com/MichaelEpicA/RBXTools");
                 Uri downloadbaseUri = new Uri(githubUri + "/releases/download/");
                 string tag = GetLatestVersion();
-                Uri downloadUri = new Uri(downloadbaseUri + tag + "/RBXTools.exe");
+                Uri downloadUri = new Uri("no");
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    downloadUri = new Uri(downloadbaseUri + tag + "/RBXTools");
+                } else if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    //not implemented (frisk)
+                } else
+                {
+                    downloadUri = new Uri(downloadbaseUri + tag + "/RBXTools.exe");
+                }
                 WebClient client = new WebClient();
                 Console.WriteLine("Downloading update...");
                 client.DownloadProgressChanged += Client_DownloadProgressChanged;
