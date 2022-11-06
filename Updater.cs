@@ -75,7 +75,7 @@ namespace RBXTools
                 if(launcherupdate && Program.info.Exists)
                 {
                     Console.WriteLine("Launcher update detected, uninjecting...");
-                    Program.RestoreOriginalLauncher();
+                    DelegateStorage.RestoreOriginalLauncher();
                     Config.WriteMod("ReinstallLauncherMod");
                     Console.WriteLine("Completed.");
                 }

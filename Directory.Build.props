@@ -1,7 +1,7 @@
 <Project>
  <PropertyGroup>
-    <FileVersion>1.0.6</FileVersion>
-	 <AssemblyVersion>1.0.6</AssemblyVersion>
+    <FileVersion>1.0.9</FileVersion>
+	 <AssemblyVersion>1.0.9</AssemblyVersion>
     <Authors>MichaelEpicA</Authors>
     <Company>MichaelEpicA Productions</Company>
  </PropertyGroup>

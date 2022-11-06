@@ -6,7 +6,7 @@ namespace RBXTools
 {
     class Choice
     {
-		private Delegate choiceFunction;
+		public Delegate choiceFunction;
 		public Choice(Delegate choice)
 		{
 			this.choiceFunction = choice;

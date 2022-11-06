@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿    <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,19 +7,32 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\coloredlogo%402x.png" />
+    <None Remove="Resources\coloredlogo%403x.png" />
+    <None Remove="Resources\coloredlogo.png" />
+    <None Remove="Resources\coloredlogor %281%29.png" />
+    <None Remove="Resources\coloredlogor %282%29.png" />
+    <None Remove="Resources\coloredlogor %283%29.png" />
     <None Remove="Resources\ouch.ogg" />
-    <None Remove="Resources\RobloxPlayerLauncher.exe" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\coloredlogo.png" />
+    <EmbeddedResource Include="Resources\coloredlogo@2x.png" />
+    <EmbeddedResource Include="Resources\coloredlogo@3x.png" />
+    <EmbeddedResource Include="Resources\coloredlogor (1).png" />
+    <EmbeddedResource Include="Resources\coloredlogor (2).png" />
+    <EmbeddedResource Include="Resources\coloredlogor (3).png" />
     <EmbeddedResource Include="Resources\ouch.ogg" />
-    <EmbeddedResource Include="Resources\RobloxPlayerLauncher.exe" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="SevenZipSharp.Interop" Version="19.0.2" />
     <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.5.0.366" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="6.0.0" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
   </ItemGroup>
 
@@ -33,7 +46,7 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>

@@ -7,17 +7,21 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Drawing.Imaging;
 using SevenZip;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.ComponentModel;
 
 namespace RBXTools
 {
     class Program
     {
 		public static FileInfo info;
-		private delegate void ChoiceDelegate();
+		public delegate void ChoiceDelegate();
 		private delegate bool ChoiceDecisionDelegate();
 		private static bool updateAvailable;
-		static List<Choice> choices = new List<Choice>();
+		public static List<Choice> choices = new List<Choice>();
 		private static void Main(string[] args)
 		{
 			FileVersionInfo info2 = FileVersionInfo.GetVersionInfo(Process.GetCurrentProcess().MainModule.FileName);
@@ -51,8 +55,8 @@ namespace RBXTools
 					//Launcher update, reinject.
 					Console.WriteLine("Reinjecting launcher...");
 					Roblox.FindRobloxFolder();
-					info = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "repairlauncher-roblox.backup"));
-					SetupAutoReapply();
+					info = new FileInfo(Path.Combine(Roblox.robloxFolder.folderinfo.FullName, "repairlauncher-roblox.backup"));
+					DelegateStorage.SetupAutoReapply();
 					Config.RemoveMod("ReinstallLauncherMod");
 					Console.WriteLine("Completed reinject of launcher.");
 				}
@@ -80,7 +84,12 @@ namespace RBXTools
             }
 			Console.Clear();
 			Roblox.FindRobloxFolder();
-			info = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "repairlauncher-roblox.backup"));
+			Config.VerifyFormat();
+			info = new FileInfo(Path.Combine(Roblox.robloxFolder.folderinfo.FullName, "repairlauncher-roblox.backup"));
+			if(Roblox.robloxFolder.adminFolder && !Roblox.DoWeHaveAdmin())
+            {
+				Roblox.RestartAsAdmin();
+			}
 			Console.WriteLine($"RBXTools v{info2.FileVersion}");
 			Thread.Sleep(2000);
 			Console.WriteLine("Made by MichaelEpicA");
@@ -116,7 +125,7 @@ namespace RBXTools
 			Console.WriteLine("Searching for roblox directory...");
 			Roblox.FindRobloxFolder();
 			Console.WriteLine("Deleting Death Sound Effect...");
-			FileInfo info = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "sounds", "ouch.ogg"));
+			FileInfo info = new FileInfo(Path.Combine(Roblox.robloxFolder.folderinfo.FullName, "content", "sounds", "ouch.ogg"));
 			info.Delete();
 			Console.WriteLine("Replacing Death Sound Effect...");
 			if (custompath != "default")
@@ -125,7 +134,7 @@ namespace RBXTools
 			}
 			else
 			{
-				ExtractResource(Path.Combine(Roblox.robloxFolder.FullName, "content", "sounds"), "ouch.ogg");
+				ExtractResource(Path.Combine(Roblox.robloxFolder.folderinfo.FullName, "content", "sounds"), "ouch.ogg");
 			}
 			Config.WriteMod("DeathSFXMod", custompath);
 			Console.WriteLine("Completed! Test it out in Roblox. Press enter to go back.");
@@ -151,23 +160,92 @@ namespace RBXTools
 			if(updateAvailable)
             {
 				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine("An update is available! Press 7 to download and install the new version!");
+				Console.WriteLine("An update is available! Press 10 to download and install the new version!");
 				Console.ResetColor();
             }
+			Console.WriteLine("Current Roblox Folder: " + Roblox.robloxFolder.folderinfo.FullName);
+			if(!Roblox.CheckRobloxRegistryInstall())
+            {
+				Console.WriteLine("Warning! Roblox Install has been detected as invalid. When you try to launch roblox, it will not work, and it will fail to launch.");
+				Console.WriteLine("In order to repair this, we will probably need to reinstall roblox. Are you okay with this? (Y/N)");
+				string input = Console.ReadLine();
+				if(input.ToLower() == "y")
+                {
+					//Reinstall roblox
+					Console.WriteLine("Do you want to just change the registry to a different roblox folder, or remake that roblox folder? (C/R)");
+					input = Console.ReadLine();
+					if(input.ToLower() == "c")
+                    {
+						Console.WriteLine("Is this the roblox folder you want to change to? (Roblox Folder: " + Roblox.robloxFolder.folderinfo.FullName + ") (Y/N)");
+						input = Console.ReadLine();
+						if(input.ToLower() == "y")
+                        {
+							//Edit registry
+							Roblox.UpdateRobloxProtocolURL();
+
+                        } else if(input.ToLower() == "n")
+                        {
+							Console.WriteLine("Please choose your roblox folder.");
+							Roblox.RobloxFolderChoose();
+							//Edit registry
+							Roblox.UpdateRobloxProtocolURL();
+						}
+                    } else if(input.ToLower() == "r")
+                    {
+						Console.WriteLine("Getting current registry folder...");
+						DirectoryInfo reg = Roblox.SearchRegistry();
+						Console.WriteLine("Checking if this is the latest version of roblox...");
+						if(Roblox.GetLatestVersion() == reg.Name)
+                        {
+							Console.WriteLine("This is the latest version of Roblox! Redownloading...");
+                        } else
+                        {
+							Console.WriteLine("Not the latest version, Redownloading to a different folder...");
+                        }
+						DirectoryInfo robloxRedownload = new DirectoryInfo(Roblox.GetLatestVersion());
+						if(robloxRedownload.Exists)
+                        {
+							Roblox.robloxFolder = new RobloxFolder(robloxRedownload);
+							Roblox.UpdateRobloxProtocolURL();
+                        } else
+                        {
+							robloxRedownload.Create();
+							RobloxFolder.ClearReadOnly(robloxRedownload);
+							Roblox.DownloadRobloxVersion(robloxRedownload);
+							Roblox.robloxFolder = new RobloxFolder(robloxRedownload);
+							Roblox.robloxFolder.Verifier();
+							Roblox.UpdateRobloxProtocolURL();
+						}
+                    }
+                } else if(input.ToLower() == "n")
+                {
+					//Welp, they aren't ok with it.
+					Console.WriteLine("Ok, guess we aren't reinstalling roblox, continuing...");
+                }
+            }
+			if (!Roblox.CheckRobloxRegistryInstall())
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("WARNING: ROBLOX FOLDER MARKED AS START IS INVALID, ROBLOX WILL NOT WORK");
+				Console.ResetColor();
+			}
 			Console.WriteLine("Welcome! What would you like to do?");
-			Choice.Add(choices, "Restore Old Noob Sound Effect", new ChoiceDelegate(RestoreOldNoobSoundEffect));
+			Choice.Add(choices, "Restore Old Noob Sound Effect", new ChoiceDelegate(DelegateStorage.RestoreOldNoobSoundEffect));
 			if (new FileInfo(info.FullName).Exists)
 			{
-				Choice.Add(choices, "Restore Original Launcher", new ChoiceDelegate(RestoreOriginalLauncher));
+				Choice.Add(choices, "Restore Original Launcher", new ChoiceDelegate(DelegateStorage.RestoreOriginalLauncher));
 			}
 			else
 			{
-				Choice.Add(choices, "Auto Reapply Changes After Roblox Update", new ChoiceDelegate(SetupAutoReapply));
+				Choice.Add(choices, "Auto Reapply Changes After Roblox Update", new ChoiceDelegate(DelegateStorage.SetupAutoReapply));
 			}
-			Choice.Add(choices, "Cleanup Roblox Folders", new ChoiceDelegate(CleanupDelegateHandler));
-			Choice.Add(choices, "Restore Old (2014) Cursors", new ChoiceDelegate(RestoreOldMouseCursors), new ChoiceDecisionDelegate(CheckIfFilesExist));
-			Choice.Add(choices, "Backup Roblox Folder", new ChoiceDelegate(BackupRobloxFolder));
-			Choice.Add(choices, "Replace Moon And Sun Textures", new ChoiceDelegate(ReplaceMoonAndSun), new ChoiceDecisionDelegate(CheckConfigFileForMod));
+			Choice.Add(choices, "Cleanup Roblox Folders", new ChoiceDelegate(DelegateStorage.CleanupDelegateHandler));
+			Choice.Add(choices, "Restore Old (2014) Cursors", new ChoiceDelegate(DelegateStorage.RestoreOldMouseCursors), new ChoiceDecisionDelegate(DelegateStorage.CheckIfFilesExist));
+			Choice.Add(choices, "Backup Roblox Folder", new ChoiceDelegate(DelegateStorage.BackupRobloxFolder));
+			Choice.Add(choices, "Replace Moon And Sun Textures", new ChoiceDelegate(DelegateStorage.ReplaceMoonAndSun), new ChoiceDecisionDelegate(DelegateStorage.CheckConfigFileForMod));
+			Choice.Add(choices, "Replace Roblox Icon", new ChoiceDelegate(DelegateStorage.ReplaceRobloxIcon), new ChoiceDecisionDelegate(DelegateStorage.CheckIfRobloxConfigExists));
+			Choice.Add(choices, "Set Up Old Roblox Player Start (Requires Auto Reapply Changes After Roblox Update/Custom Launcher to work)", new ChoiceDelegate(DelegateStorage.RobloxForceStart));
+			Choice.Add(choices, "Roblox Folder Management", new ChoiceDelegate(Roblox.RobloxFolderChoose));
 			if(updateAvailable)
             {
 				Choice.Add(choices, "Update to New Version", new ChoiceDelegate(Updater.UpdateAndRestart));
@@ -193,10 +271,18 @@ namespace RBXTools
 			}
 			try
 			{
-				if (choices[number - 1] != null)
-				{
-					choices[number - 1].Run();
+				if(number == 9)
+                {
+					choices[number - 1].choiceFunction.DynamicInvoke();
+					Welcome();
+                } else
+                {
+					if (choices[number - 1] != null)
+					{
+						choices[number - 1].Run();
+					}
 				}
+				
 			} catch(ArgumentOutOfRangeException)
             {
 				//Put in a number higher than our actual choice count.
@@ -214,123 +300,7 @@ namespace RBXTools
 			}
 		}
 
-        private static bool CheckConfigFileForMod()
-        {
-           if(Config.CheckIfModHasBeenAddedAlready("ReplaceMoonAndSunMod"))
-            {
-				Choice.Add(choices, "Restore Moon And Sun to Originals", new ChoiceDelegate(RestoreMoonAndSun));
-				return true;
-            } else
-            {
-				return false;
-            }
-        }
-
-        private static void RestoreMoonAndSun()
-        {
-			Console.WriteLine("Restoring moon and sun...");
-			DirectoryInfo MoonAndSunDirectory = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "sky"));
-			FileInfo moon = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "moon.jpg"));
-			FileInfo sun = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "sun.jpg"));
-			FileInfo moonb = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "moonb.jpg"));
-			FileInfo sunb = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "sunb.jpg"));
-			Console.WriteLine("Deleting modded moon and sun...");
-			moon.Delete();
-			sun.Delete();
-			Console.WriteLine("Restoring backup of moon and sun...");
-			moonb.CopyTo(moon.FullName);
-			moonb.Delete();
-			sunb.CopyTo(sun.FullName);
-			sunb.Delete();
-			Config.RemoveMod("ReplaceMoonAndSunMod");
-			Console.WriteLine("Restored backup of moon and sun! Press enter to go back.");
-
-		}
-
-		private static void ReplaceMoonAndSun()
-		{
-			Console.WriteLine("Replacing moon and sun...");
-			DirectoryInfo MoonAndSunDirectory = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "sky"));
-			FileInfo moon = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "moon.jpg"));
-			FileInfo sun = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "sun.jpg"));
-			FileInfo moonb = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "moonb.jpg"));
-			FileInfo sunb = new FileInfo(Path.Combine(MoonAndSunDirectory.FullName, "sunb.jpg"));
-			Console.WriteLine("Please enter path you want to use to replace the moon.");
-			string moonpath = Console.ReadLine();
-			if (!Roblox.RemoveInvalidCharactersRef(ref moonpath, true, false))
-			{
-				//Reenter the path.
-				if(Path.GetExtension(moonpath) != ".jpg")
-                {
-					Console.WriteLine("In order to replace the texture correctly, we need to have it be a jpg. Try again.");
-					ReplaceMoonAndSun();
-                }
-				Console.WriteLine("Incorrect path. Please reenter it.");
-				ReplaceMoonAndSun();
-			}
-			Console.WriteLine("Please enter path you want to use to replace the sun.");
-			string sunpath = Console.ReadLine();
-			if(!Roblox.RemoveInvalidCharactersRef(ref sunpath, true, false))
-            {
-				//Reenter the path.
-				if (Path.GetExtension(sunpath) != ".jpg")
-				{
-					Console.WriteLine("In order to replace the texture correctly, we need to have it be a jpg. Try again.");
-					ReplaceMoonAndSun();
-				}
-				Console.WriteLine("Incorrect path. Please reenter it.");
-				ReplaceMoonAndSun();
-            }
-			Console.WriteLine("Backing up moon and sun...");
-			if(moonb.Exists)
-            {
-				moonb.Delete();
-            }
-			if(sunb.Exists)
-            {
-				sunb.Delete();
-            }
-			moon.CopyTo(moonb.FullName);
-			sun.CopyTo(sunb.FullName);
-			Console.WriteLine("Backed up moon and sun.");
-			Console.WriteLine("Replacing moon and sun...");
-			moon.Delete();
-			File.Copy(moonpath, moon.FullName);
-			sun.Delete();
-			File.Copy(sunpath, sun.FullName);
-			Config.WriteMod("ReplaceMoonAndSunMod", moonpath, sunpath);
-			Console.WriteLine("Replaced Moon and Sun, press enter to go back.");
-		}
-
-        public static void SetupAutoReapply()
-		{
-			Console.WriteLine("Backing up launcher...");
-			Roblox.FindRobloxFolder();
-			FileInfo launcherPath = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "RobloxPlayerLauncher.exe"));
-			launcherPath.CopyTo(info.FullName, true);
-			launcherPath.Delete();
-			Console.WriteLine("Back up complete!");
-			Console.WriteLine("Replacing launcher...");
-			ExtractResource(launcherPath.Directory.FullName, launcherPath.Name);
-			Roblox.Cleanup();
-			Console.WriteLine("Replaced launcher! Press enter to go back.");
-		}
-		public static void RestoreOriginalLauncher()
-		{
-			Console.WriteLine("Deleting modded launcher...");
-			Roblox.FindRobloxFolder();
-			FileInfo launcherPath = new FileInfo(Path.Combine(Roblox.robloxFolder.FullName, "RobloxPlayerLauncher.exe"));
-			if (launcherPath.Exists)
-			{
-				launcherPath.Delete();
-			}
-			Console.WriteLine("Modded launcher deleted.");
-			Console.WriteLine("Replacing with original launcher...");
-			info.CopyTo(launcherPath.FullName);
-			info.Delete();
-			Console.WriteLine("Replaced with original launcher.");
-			Console.WriteLine("Completed! (Auto reapply has been disabled.) Press enter to go back.");
-		}
+       
 
 		public static void CleanupRobloxFolders(bool ranwithcleanupreboot = false)
 		{
@@ -372,126 +342,37 @@ namespace RBXTools
 				Environment.Exit(0);
 			}
 		}
-		public static void CleanupDelegateHandler()
-		{
-			CleanupRobloxFolders(false);
-		}
-		
-		public static void RestoreOldMouseCursors()
-        {
-			Console.WriteLine("Backing up original mouse cursors...");
-			DirectoryInfo mouseCursors = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", "Cursors", "KeyboardMouse"));
-			FileInfo ArrowCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowCursor.png"));
-			FileInfo ArrowFarCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowFarCursor.png"));
-			ArrowCursor.CopyTo(Path.Combine(ArrowCursor.Directory.FullName, "ArrowCursor.backup"));
-			ArrowFarCursor.CopyTo(Path.Combine(ArrowFarCursor.Directory.FullName, "ArrowFarCursor.backup"));
-			try
-            {
-				ArrowCursor.Delete();
-				ArrowFarCursor.Delete();
-			}
-			catch(Exception)
-            {
-				//Probably doesn't exist, oh well.
-            }
-			Console.WriteLine("Backed up original mouse cursors.");
-			Console.WriteLine("Replacing with old mouse cursors...");
-			File.Copy(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", ArrowCursor.Name), ArrowCursor.FullName);
-			File.Copy(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", ArrowFarCursor.Name), ArrowFarCursor.FullName);
-			Config.WriteMod("MouseCursorMod");
-			Console.WriteLine("Replaced with old mouse cursors! Press enter to go back.");
-		}
 
-		public static bool CheckIfFilesExist()
-        {
-			DirectoryInfo mouseCursors = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", "Cursors", "KeyboardMouse"));
-			FileInfo ArrowCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowCursor.backup"));
-			FileInfo ArrowFarCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowFarCursor.backup"));
-			if(ArrowCursor.Exists && ArrowFarCursor.Exists)
-            {
-				Choice.Add(choices, "Restore Original Mouse Cursors", new ChoiceDelegate(RestoreOriginalMouseCursors));
-				return true;
-            } else
-            {
-				return false;
-            }
-		}
-
-		public static void RestoreOriginalMouseCursors()
-        {
-			Console.WriteLine("Restoring original mouse cursors...");
-			DirectoryInfo mouseCursors = new DirectoryInfo(Path.Combine(Roblox.robloxFolder.FullName, "content", "textures", "Cursors", "KeyboardMouse"));
-			FileInfo ArrowCursorb = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowCursor.backup"));
-			FileInfo ArrowFarCursorb = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowFarCursor.backup"));
-			FileInfo ArrowCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowCursor.png"));
-			FileInfo ArrowFarCursor = new FileInfo(Path.Combine(mouseCursors.FullName, "ArrowFarCursor.png"));
-			try
-            {
-				ArrowCursor.Delete();
-				ArrowFarCursor.Delete();
-			} catch(Exception)
-            {
-				//Probably doesn't exist, oh well.
-			}
-			ArrowCursorb.MoveTo(ArrowCursor.FullName);
-			ArrowFarCursorb.MoveTo(ArrowFarCursor.FullName);
-			Config.RemoveMod("MouseCursorMod");
-			Console.WriteLine("Restored original mouse cursors. Press enter to go back.");	
-		}
-
-		public static void BackupRobloxFolder()
-        {
-			Console.WriteLine("Please enter a path to save the back up to.");
-			string path = Console.ReadLine();
-			Roblox.RemoveInvalidCharactersRef(ref path, true, false);
-			if(String.IsNullOrWhiteSpace(path))
-            {
-				Console.WriteLine("Path cannot be empty.");
-				Console.Clear();
-				BackupRobloxFolder();
-				return;
-            }
-			FileInfo info = new FileInfo(path);
-			if (info.Exists)
-            {
-				Console.WriteLine("We can't save to this path because a file already exists there. Choose a different path.");
-				BackupRobloxFolder();
-				return;
-            }
-			Console.WriteLine("Backing up...");
-			string ext = Path.GetExtension(info.FullName);
-			if(ext != ".zip")
-            {
-				info.Create().Close();
-			}
-			var path2 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Environment.Is64BitProcess ? "x64" : "x86", "7z.dll");
-			SevenZipBase.SetLibraryPath(path2);
-			SevenZipCompressor compressor = new SevenZipCompressor();
-			//Decide which type we want to compress to.
-			switch(ext)
-            {
-				case ".zip":
-					ZipFile.CreateFromDirectory(Roblox.robloxFolder.FullName, info.FullName);
-					Console.WriteLine("\nCompleted backup to: " + info.FullName);
-					Console.WriteLine("Press enter to go back.");
-					return;
-					break;
-
-				 default:
-					compressor.ArchiveFormat = OutArchiveFormat.SevenZip;
-					break;
-            }
-			compressor.Compressing += Compressing;
-			if (ext == ".zip") return;
-			compressor.CompressDirectoryAsync(Roblox.robloxFolder.FullName, info.FullName).Wait();
-			Console.WriteLine("\nCompleted backup to: " + info.FullName);
-			Console.WriteLine("Press enter to go back.");
-		}
 		static bool update = false;
-        private static void Compressing(object sender, ProgressEventArgs e)
+        public static void Compressing(object sender, ProgressEventArgs e)
         {
 			ConsoleUtility.WriteProgressBar(e.PercentDone,update);
 			update = true;
         }
+
+		public static Bitmap ResizeImage(Image image, int width, int height)
+        {
+			var destRect = new Rectangle(0, 0, width, height);
+			var destImage = new Bitmap(width, height);
+
+			destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+			using (var graphics = Graphics.FromImage(destImage))
+			{
+				graphics.CompositingMode = CompositingMode.SourceCopy;
+				graphics.CompositingQuality = CompositingQuality.HighQuality;
+				graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+				graphics.SmoothingMode = SmoothingMode.HighQuality;
+				graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+				using (var wrapMode = new ImageAttributes())
+				{
+					wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+					graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+				}
+			}
+
+			return destImage;
+		}
     }
 }
